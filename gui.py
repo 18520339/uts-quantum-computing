@@ -29,21 +29,20 @@ class QuantumTicTacToeGUI:
             for j in range(self.board.size):
                 button = widgets.Button(
                     description = ' ', 
-                    layout = widgets.Layout(width='120px', height='120px', border='1px solid black'),
-                    style = {'font_weight': 'bold'}
+                    layout = {'width': '120px', 'height': '120px', 'border': '1px solid black'}
+                    style = {'button_color': 'lightgray', 'font_weight': 'bold'}
                 )
-                button.style.button_color = 'lightgray'
                 button.on_click(self.create_on_cell_clicked(i, j))
                 self.buttons[i].append(button)
 
-        self.game_info = widgets.HTML(value='<h3>Turn: X</h3>')
+        self.game_info = widgets.HTML(f"<h3>Turn: {self.current_player} - Mode: {self.quantum_move_mode}</h3>")
         self.board_histogram_widget = widgets.HBox([
             widgets.VBox([
                 widgets.VBox([widgets.HBox(row) for row in self.buttons]), 
                 self.game_info, self.log
             ]), 
             self.histogram_output
-        ], layout = widgets.Layout(display='flex', justify_content='space-between'))
+        ], layout = {'display': 'flex', 'justify_content': 'space-between'})
 
         self.create_action_buttons()
         display(widgets.VBox([self.board_histogram_widget, self.action_buttons, self.circuit_output]))
@@ -65,8 +64,10 @@ class QuantumTicTacToeGUI:
         self.reset_btn.on_click(self.on_reset_btn_clicked)
         
         # Arrange the buttons in a horizontal layout
-        self.action_buttons = widgets.HBox([self.classical_btn, self.swap_btn, self.entangled_btn, self.measure_btn, self.reset_btn])
-        self.action_buttons.layout.margin = '10px 0px 10px 0px'
+        self.action_buttons = widgets.HBox(
+            [self.classical_btn, self.swap_btn, self.entangled_btn, self.measure_btn, self.reset_btn],
+            layout = {'margin': '10px 0px 10px 0px'}
+        )
     
     
     def on_measure_btn_clicked(self, btn=None):
@@ -184,4 +185,4 @@ class QuantumTicTacToeGUI:
     def display_histogram(self, counts):
         with self.histogram_output:
             clear_output(wait=True)
-            display(plot_histogram(counts))
+            display(plot_histogram(counts, figsize=(8, 5)))
