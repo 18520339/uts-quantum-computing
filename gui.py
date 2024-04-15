@@ -7,8 +7,8 @@ from board import Board
 
       
 class QuantumTicTacToeGUI:
-    def __init__(self):
-        self.board = Board(3)
+    def __init__(self, size=3):
+        self.board = Board(size)
         self.current_player = 'X' # X starts the game
         self.game_over = False
             
@@ -36,19 +36,17 @@ class QuantumTicTacToeGUI:
                 button.on_click(self.create_on_cell_clicked(i, j))
                 self.buttons[i].append(button)
 
-        self.create_action_buttons()
         self.game_info = widgets.HTML(value='<h3>Turn: X</h3>')
-        self.board_widget = widgets.VBox([
-            widgets.VBox([widgets.HBox(row) for row in self.buttons]), 
-            self.game_info, self.log
-        ])
+        self.board_histogram_widget = widgets.HBox([
+            widgets.VBox([
+                widgets.VBox([widgets.HBox(row) for row in self.buttons]), 
+                self.game_info, self.log
+            ]), 
+            self.histogram_output
+        ], layout = widgets.Layout(display='flex', justify_content='space-between'))
 
-        self.board_widget.layout.margin = '0px 70px 0px 0px'
-        self.action_buttons.layout.margin = '10px 0px 10px 0px'
-        display(widgets.VBox([
-            widgets.HBox([self.board_widget, self.histogram_output]), 
-            self.action_buttons, self.circuit_output
-        ]))
+        self.create_action_buttons()
+        display(widgets.VBox([self.board_histogram_widget, self.action_buttons, self.circuit_output]))
 
 
     def create_action_buttons(self):
@@ -68,6 +66,7 @@ class QuantumTicTacToeGUI:
         
         # Arrange the buttons in a horizontal layout
         self.action_buttons = widgets.HBox([self.classical_btn, self.swap_btn, self.entangled_btn, self.measure_btn, self.reset_btn])
+        self.action_buttons.layout.margin = '10px 0px 10px 0px'
     
     
     def on_measure_btn_clicked(self, btn=None):
@@ -82,7 +81,7 @@ class QuantumTicTacToeGUI:
     def on_reset_btn_clicked(self, btn=None):
         with self.log:
             clear_output(wait=True)
-            self.board = Board(3) 
+            self.board = Board(self.board.size) 
             self.current_player = 'O' # Set 'O' as update_board will switch the players
             self.game_over = False
             self.quantum_mode = 'CLASSICAL'
@@ -185,4 +184,4 @@ class QuantumTicTacToeGUI:
     def display_histogram(self, counts):
         with self.histogram_output:
             clear_output(wait=True)
-            display(plot_histogram(counts, figsize=(8, 4)))
+            display(plot_histogram(counts))
