@@ -50,3 +50,43 @@ class QuantumTicTacToeGUI:
             widgets.HBox([self.board_widget, self.histogram_output]), 
             self.action_buttons, self.circuit_output
         ]))
+
+
+    def create_action_buttons(self):
+        # Create buttons for each action
+        self.classical_btn = widgets.Button(description='Classical Move', button_style='primary')
+        self.swap_btn = widgets.Button(description='SWAP 2 cells', button_style='info')
+        self.entangled_btn = widgets.Button(description='Entanglement', button_style='success')
+        self.measure_btn = widgets.Button(description='Measure', button_style='warning')
+        self.reset_btn = widgets.Button(description='Reset', button_style='danger')
+        
+        # Assign the on-click events to the buttons
+        self.classical_btn.on_click(self.create_on_quantum_clicked('CLASSICAL'))
+        self.swap_btn.on_click(self.create_on_quantum_clicked('SWAP', 'Select 2 cells to swap their states.'))
+        self.entangled_btn.on_click(self.create_on_quantum_clicked('ENTANGLED', 'Select 2 cells to entangle.'))
+        self.measure_btn.on_click(self.on_measure_btn_clicked)
+        self.reset_btn.on_click(self.on_reset_btn_clicked)
+        
+        # Arrange the buttons in a horizontal layout
+        self.action_buttons = widgets.HBox([self.classical_btn, self.swap_btn, self.entangled_btn, self.measure_btn, self.reset_btn])
+    
+    
+    def on_measure_btn_clicked(self, btn=None):
+        with self.log:
+            clear_output(wait=True)
+            counts = self.board.collapse_board()
+            self.display_histogram(counts)
+            self.update_board()
+            print('Board measured and quantum states collapsed.')
+            
+            
+    def on_reset_btn_clicked(self, btn=None):
+        with self.log:
+            clear_output(wait=True)
+            self.board = Board(3) 
+            self.current_player = 'O' # Set 'O' as update_board will switch the players
+            self.game_over = False
+            self.quantum_mode = 'CLASSICAL'
+            self.update_board()
+            print('Game reset. New game started.')
+       
