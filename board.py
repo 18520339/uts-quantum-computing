@@ -25,6 +25,24 @@ class Board:
                              [tuple(range(0, size**2, size + 1)), tuple(range(size - 1, size**2 - 1, size - 1))]
                               
 
+    def __str__(self):
+        # Create a colorful string representation of the board
+        board_str = ''
+        for i, row in enumerate(self.cells):
+            for cell in row:
+                if '?' in cell: cell_color = 'cyan' # Quantum move
+                elif cell == 'X': cell_color = 'red'
+                elif cell == 'O': cell_color = 'green'
+                else: cell_color = 'yellow'
+                board_str += f' {colored(cell, cell_color)} '
+                board_str += '|' if '?' in cell else ' |'
+                
+            board_str = board_str[:-1] + '\n' # Remove last separator
+            if i < self.size - 1: # Add horizontal separator
+                board_str += '-' * (5 * self.size - 1) + '\n'
+        return board_str
+
+    
     def make_classical_move(self, row, col, symbol):
         if self.cells[row][col] == ' ': # Check if the cell is occupied
             self.cells[row][col] = symbol
