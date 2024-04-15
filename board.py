@@ -64,3 +64,19 @@ class Board:
         self.entanglement_count = 0
         self.circuit.reset(self.qubits) 
         return counts
+
+    
+    def check_win(self):
+        # Dynamic implementation for above logic with dynamic winning lines
+        for line in self.winning_lines:
+            # Check if all cells in the line are the same and not empty
+            first_cell = self.cells[line[0] // self.size][line[0] % self.size]
+            is_same = all(self.cells[i // self.size][i % self.size] == first_cell for i in line)
+            if is_same and first_cell not in [' ', 'X?', 'O?']: return first_cell
+                
+        # If no spaces and no entanglements left => 'Draw'
+        # If all cells are filled but there are entanglements => collapse_board
+        if all(self.cells[i // self.size][i % self.size] not in [' '] for i in range(self.size**2)):
+            if self.entanglement_count <= 0: return 'Draw'
+            return self.entanglement_count
+        return None
