@@ -26,6 +26,18 @@ class QuantumTicTacToeCLI:
         if self.board.make_classical_move(row, col, self.current_player): self.check_win()
         else: print('That position is already occupied. Please choose another.')
 
+    
+    def make_swap_move(self):
+        # Prompt the player to choose 2 cells for a SWAP move and execute it
+        print(f"{self.current_player}'s turn to move. nter 2 positions to swap their quantum states:")
+        indices1 = self.input_to_index(input('- First position: '))
+        if not indices1: return
+        indices2 = self.input_to_index(input('- Second position: '))
+        if not indices2: return
+        
+        if self.board.make_swap_move(*indices1, *indices2): self.check_win()
+        else: print('Invalid SWAP move. Both cells must be non-empty.')
+            
 
     def make_entangled_move(self):
         # Let the player make an entangled move involving 2 positions
@@ -69,10 +81,11 @@ class QuantumTicTacToeCLI:
         print(self.board)
         
         while True:
-            user_input = input("Type 1 for classical, 2 for entangled, or 'q' to exit: ")
-            if user_input == '1': self.make_classical_move()
-            elif user_input == '2': self.make_entangled_move()
-            elif user_input.lower() == 'q': return
+            choose = input('Classical Move (1), SWAP Move (2), Entangled Move (3), Quit (q). Choose a move: ')
+            if choose == '1': self.make_classical_move()
+            elif choose == '2': self.make_swap_move()
+            elif choose == '3': self.make_entangled_move()
+            elif choose.lower() == 'q': return
     
 
 if __name__ == '__main__':

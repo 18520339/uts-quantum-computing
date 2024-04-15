@@ -51,6 +51,16 @@ class Board:
         return False
 
 
+    def make_swap_move(self, row1, col1, row2, col2):
+        # Swap the quantum states of 2 cells
+        if self.cells[row1][col1] != ' ' and self.cells[row2][col2] != ' ':
+            indices = [row1 * self.size + col1, row2 * self.size + col2]
+            self.circuit.swap(self.qubits[indices[0]], self.qubits[indices[1]])
+            self.cells[row1][col1], self.cells[row2][col2] = self.cells[row2][col2], self.cells[row1][col1]
+            return True
+        return False
+    
+
     def make_entangled_move(self, row1, col1, row2, col2, symbol):
         # Entangle 2 cells by applying a Hadamard gate and a CNOT gate
         if self.cells[row1][col1] == ' ' and self.cells[row2][col2] == ' ' and (row1, col1) != (row2, col2):
