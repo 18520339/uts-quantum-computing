@@ -42,8 +42,26 @@ class QuantumTicTacToeCLI:
                 print('Performing automatic board measurement...')
                 self.board.collapse_board()
             self.check_win()
-        else: print('Invalid entangled move. At least 1 position is occupied.')    
-         
+        else: print('Invalid entangled move. At least 1 position is occupied.')
+
+    
+    def check_win(self):
+        self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
+        while True: 
+            print(self.board)
+            result = self.board.check_win()
+            
+            if result == 'Draw': 
+                print("Game Over. It's a draw!")
+                exit()
+            elif result in ['X', 'O']: 
+                print(f'Game Over. {result} wins!')
+                exit()
+            elif type(result) == int: 
+                print(f'All cells are filled with {result} entanglements => Keep Collapsing...')
+                self.board.collapse_board() # All cells are filled but there are entanglements 
+            else: return # Continue the game if no winner yet
+            
 
     def run_game(self):
         print('Welcome to Quantum Tic-Tac-Toe!')
