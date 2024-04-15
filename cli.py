@@ -29,7 +29,7 @@ class QuantumTicTacToeCLI:
     
     def make_swap_move(self):
         # Prompt the player to choose 2 cells for a SWAP move and execute it
-        print(f"{self.current_player}'s turn to move. nter 2 positions to swap their quantum states:")
+        print(f"{self.current_player}'s turn to move. Enter 2 positions to swap their quantum states:")
         indices1 = self.input_to_index(input('- First position: '))
         if not indices1: return
         indices2 = self.input_to_index(input('- Second position: '))

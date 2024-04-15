@@ -1,10 +1,9 @@
 import ipywidgets as widgets
-from termcolor import colored
 from IPython.display import clear_output
+from termcolor import colored
 
-from qiskit import ClassicalRegister, QuantumRegister, QuantumCircuit, transpile
 from qiskit.visualization import plot_bloch_multivector, plot_histogram
-from qiskit_aer import AerSimulator
+from board import Board
 
       
 class QuantumTicTacToeGUI:
@@ -45,7 +44,7 @@ class QuantumTicTacToeGUI:
         ])
 
         self.board_widget.layout.margin = '0px 70px 0px 0px'
-        self.action_buttons.layout.margin = '0px 0px 30px 0px'
+        self.action_buttons.layout.margin = '10px 0px 10px 0px'
         display(widgets.VBox([
             widgets.HBox([self.board_widget, self.histogram_output]), 
             self.action_buttons, self.circuit_output
@@ -55,7 +54,7 @@ class QuantumTicTacToeGUI:
     def create_action_buttons(self):
         # Create buttons for each action
         self.classical_btn = widgets.Button(description='Classical Move', button_style='primary')
-        self.swap_btn = widgets.Button(description='SWAP 2 cells', button_style='info')
+        self.swap_btn = widgets.Button(description='SWAP Move', button_style='info')
         self.entangled_btn = widgets.Button(description='Entanglement', button_style='success')
         self.measure_btn = widgets.Button(description='Measure', button_style='warning')
         self.reset_btn = widgets.Button(description='Reset', button_style='danger')
@@ -187,4 +186,3 @@ class QuantumTicTacToeGUI:
         with self.histogram_output:
             clear_output(wait=True)
             display(plot_histogram(counts, figsize=(8, 4)))
-       
