@@ -1,8 +1,8 @@
 from board import Board
     
 class QuantumTicTacToeCLI:
-    def __init__(self):
-        self.board = Board(3)
+    def __init__(self, size):
+        self.board = Board(size)
         self.current_player = 'X' # X starts the game
 
 
@@ -30,9 +30,9 @@ class QuantumTicTacToeCLI:
     def make_swap_move(self):
         # Prompt the player to choose 2 cells for a SWAP move and execute it
         print(f"{self.current_player}'s turn to move. Enter 2 positions to swap their quantum states:")
-        indices1 = self.input_to_index(input('- First position: '))
+        indices1 = self.input_to_index(input('- First position (row col): '))
         if not indices1: return
-        indices2 = self.input_to_index(input('- Second position: '))
+        indices2 = self.input_to_index(input('- Second position (row col): '))
         if not indices2: return
         
         if self.board.make_swap_move(*indices1, *indices2): self.check_win()
@@ -40,14 +40,19 @@ class QuantumTicTacToeCLI:
             
 
     def make_entangled_move(self):
-        # Let the player make an entangled move involving 2 positions
-        print(f"{self.current_player}'s turn to move. Enter 2 positions to entangle:")
-        indices1 = self.input_to_index(input('- First position: '))
-        if not indices1: return
-        indices2 = self.input_to_index(input('- Second position: '))
-        if not indices2: return
-            
-        if self.board.make_entangled_move(*indices1, *indices2, self.current_player):
+        is_triple = input(f"{self.current_player}'s turn to move. Pairwise Entanglement (1), Triple Entanglement (2): ")
+        if is_triple not in ['1', '2']: 
+            print('Invalid input. Please enter 1 or 2.')
+            return
+        
+        print(f"Enter {2 if is_triple == '1' else 3} positions to entangle their quantum states:")
+        indices = [
+            self.input_to_index(input(f'- Position {i + 1} (row col): ')) 
+            for i in range(3 if is_triple == '2' else 2)
+        ]
+        if None in indices: return
+        
+        if self.board.make_entangled_move(*indices, player_mark=self.current_player):
             print('These positions are now entangled and in a superposition state.')
             if self.board.can_be_collapsed(): 
                 print(self.board)
@@ -55,8 +60,8 @@ class QuantumTicTacToeCLI:
                 self.board.collapse_board()
             self.check_win()
         else: print('Invalid entangled move. At least 1 position is occupied.')
-
-    
+        
+        
     def check_win(self):
         self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
         while True: 
@@ -77,7 +82,6 @@ class QuantumTicTacToeCLI:
 
     def run_game(self):
         print('Welcome to Quantum Tic-Tac-Toe!')
-        print('Players take turns making classical/entangled moves on the board.')
         print(self.board)
         
         while True:
@@ -89,5 +93,5 @@ class QuantumTicTacToeCLI:
     
 
 if __name__ == '__main__':
-    game = QuantumTicTacToeCLI()
+    game = QuantumTicTacToeCLI(3)
     game.run_game()
