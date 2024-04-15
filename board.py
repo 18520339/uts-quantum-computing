@@ -61,6 +61,17 @@ class Board:
             self.entanglement_count += 1
             return True
         return False
+    
+    
+    def can_be_collapsed(self):
+        # Determine if a measurement should be made based on complex conditions.
+        # Example condition: measure if the entanglements reach 3 or more,
+        # If an entangled cell is part of a potential winning line => measure
+        if self.entanglement_count >= 3:
+            for line in self.winning_lines:
+                if any('?' in self.cells[i // self.size][i % self.size] for i in line):
+                    return True
+        return False
 
 
     def collapse_board(self):
