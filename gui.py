@@ -174,4 +174,17 @@ class QuantumTicTacToeGUI:
             elif type(result) == int: 
                 print(f'All cells are filled with {result} entanglements => Keep Collapsing...')
                 self.board.collapse_board() # All cells are filled but there are entanglements 
-            else: break # Continue the game if no winner yet       
+            else: break # Continue the game if no winner yet
+        
+
+    def display_circuit(self):
+        with self.circuit_output:
+            clear_output(wait=True)
+            display(self.board.circuit.draw('mpl'))
+
+
+    def display_histogram(self, counts):
+        with self.histogram_output:
+            clear_output(wait=True)
+            display(plot_histogram(counts, figsize=(8, 4)))
+       
