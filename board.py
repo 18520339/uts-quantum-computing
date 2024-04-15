@@ -43,3 +43,24 @@ class Board:
             self.entanglement_count += 1
             return True
         return False
+
+
+    def collapse_board(self):
+        # Simulate the measurement process and update the board accordingly
+        self.circuit.measure(self.qubits, self.bits) # Measure the quantum state to collapse it to classical states
+        transpiled_circuit = transpile(self.circuit, self.simulator)
+        job = self.simulator.run(transpiled_circuit, memory=True)
+        
+        counts = job.result().get_counts()
+        max_state = max(counts, key=counts.get) # Get the state with the highest probability
+        measured_state = format(int(max_state, 16), f'0{self.size**2}b')[::-1] 
+        
+        for i in range(self.size ** 2):
+            row, col = divmod(i, self.size)
+            if self.cells[row][col].endswith('?'):
+                self.cells[row][col] = 'X' if measured_state[i] == '1' else 'O'
+
+        # Reset the circuit for the next round of quantum moves    
+        self.entanglement_count = 0
+        self.circuit.reset(self.qubits) 
+        return counts
