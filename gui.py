@@ -89,4 +89,89 @@ class QuantumTicTacToeGUI:
             self.quantum_mode = 'CLASSICAL'
             self.update_board()
             print('Game reset. New game started.')
-       
+    
+    
+    def create_on_quantum_clicked(self, mode, message=''):
+        def on_quantum_clicked(btn):
+            with self.log:
+                self.quantum_mode = mode
+                self.quantum_cells = []
+                self.game_info.value = f"<h3>Turn: {self.current_player} - Mode: {self.quantum_mode}</h3>"
+                print(f'{mode} mode ACTIVATED' + f': {message}' if message else '')
+        return on_quantum_clicked
+    
+
+    def create_on_cell_clicked(self, i, j):
+        def on_cell_clicked(btn):
+            with self.log:
+                if self.quantum_mode == 'CLASSICAL':
+                    if self.board.make_classical_move(i, j, self.current_player): self.update_board()
+                    else: print('That position is already occupied. Please choose another.')
+                    
+                elif len(self.quantum_cells) < 2: # Multi-qubit gates operation
+                    self.quantum_cells.append((i, j))
+                    print(f'Cell ({i + 1}, {j + 1}) selected for {self.quantum_mode} move.')
+                    
+                    if len(self.quantum_cells) == 2:
+                        if self.quantum_mode == 'SWAP': self.make_swap_move()
+                        elif self.quantum_mode == 'ENTANGLED': self.make_entangled_move()
+        return on_cell_clicked
+
+
+    def make_swap_move(self):
+        if self.board.make_swap_move(*self.quantum_cells[0], *self.quantum_cells[1]):
+            print(f'SWAPPED Cell {self.quantum_cells[0]} to {self.quantum_cells[1]}')
+            self.update_board()
+        else:
+            clear_output(wait=True)
+            print('Invalid SWAP move. Both cells must be non-empty.')
+        self.quantum_cells = []
+
+
+    def make_entangled_move(self):
+        if self.board.make_entangled_move(*self.quantum_cells[0], *self.quantum_cells[1], self.current_player):
+            print('These positions are now entangled and in a superposition state.')
+            if self.board.can_be_collapsed():
+                print('Performing automatic board measurement...')
+                self.on_measure_btn_clicked()
+            else: self.update_board()
+        else:
+            clear_output(wait=True)
+            print('Invalid entangled move. At least 1 position is occupied.')
+        self.quantum_cells  = []
+            
+
+    def update_board(self):
+        self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
+        self.check_win()
+
+        for i in range(self.board.size):
+            for j in range(self.board.size):
+                cell = self.board.cells[i][j]
+                button = self.buttons[i][j]
+                color_map = {'X': 'dodgerblue', 'O': 'orangered', '?': 'green', ' ': 'lightgray'}
+                
+                button.description = cell if cell != ' ' else ' '
+                button.style.button_color = color_map[cell[-1]]
+                button.disabled = self.game_over
+        
+        self.game_info.value = f"<h3>Turn: {self.current_player} - Mode: {self.quantum_mode}</h3>"
+        for btn in self.action_buttons.children[:-1]:
+            btn.disabled = self.game_over
+        
+
+    def check_win(self):
+        while not self.game_over: 
+            self.display_circuit()
+            result = self.board.check_win()
+            
+            if result == 'Draw': 
+                print("Game Over. It's a draw!")
+                self.game_over = True
+            elif result in ['X', 'O']: 
+                print(f'Game Over. {result} wins!')
+                self.game_over = True
+            elif type(result) == int: 
+                print(f'All cells are filled with {result} entanglements => Keep Collapsing...')
+                self.board.collapse_board() # All cells are filled but there are entanglements 
+            else: break # Continue the game if no winner yet       
