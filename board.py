@@ -66,25 +66,35 @@ class Board:
             return True
         return False
     
-
-    def make_entangled_move(self, *positions, player_mark):
-        # Apply quantum moves, including pairwise and triple entanglements
-        if len(positions) not in [2, 3]: return False
-        if any(self.cells[row][col] != ' ' for row, col in positions): return False
-        if len(set(positions)) != len(positions): return False
+    
+    def make_entangled_move(self, *positions, risk_level, player_mark):
+        # Entangle the quantum states of 2 or 3 cells based on the risk level
+        pos_count = len(positions)
+        if pos_count not in [2, 3] or risk_level not in [1, 2, 3, 4] or len(set(positions)) != pos_count or \
+            any(self.cells[row][col] != ' ' for row, col in positions): return False
         
         indices = [row * self.size + col for row, col in positions]
-        if len(positions) == 2: # Standard Pairwise Entanglement using CNOT gate
-            self.circuit.h(self.qubits[indices[0]])
-            self.circuit.cx(self.qubits[indices[0]], self.qubits[indices[1]])
-        else: # Triple Entanglement using Toffoli gate
-            self.circuit.h(self.qubits[indices[0]]) # Apply Hadamard gate to the first qubit
-            self.circuit.cx(self.qubits[indices[0]], self.qubits[indices[1]]) # Apply CNOT gate between the first and second qubits
-            self.circuit.ccx(self.qubits[indices[0]], self.qubits[indices[1]], self.qubits[indices[2]]) # Apply Toffoli gate
+        self.circuit.h(self.qubits[indices[0]])
         
+        if pos_count == 2: 
+            # Pairwise Entanglement with Bell state for 2 qubits:
+            # Lv1. |Ψ+⟩ = (∣01⟩ + ∣10⟩)/√2 | Lv3. |Φ+⟩ = (∣00⟩ + ∣11⟩)/√2
+            if risk_level == 1: self.circuit.x(self.qubits[indices[1]])
+            self.circuit.cx(self.qubits[indices[0]], self.qubits[indices[1]])
+        else: 
+            # Triple Entanglement with GHZ state for 3 qubits:
+            # Lv2. (∣010⟩ + ∣101⟩)/√2 | Lv4. (∣000⟩ + ∣111⟩)/√2
+            if risk_level == 2: 
+                self.circuit.x(self.qubits[indices[1]])
+                self.circuit.x(self.qubits[indices[2]])
+                
+            # Apply CNOT chain to entangle all 3 qubits
+            self.circuit.cx(self.qubits[indices[0]], self.qubits[indices[1]])
+            self.circuit.cx(self.qubits[indices[1]], self.qubits[indices[2]])
+            
         for row, col in positions: self.cells[row][col] = player_mark + '?'
         self.entanglement_count += 1
-        return True
+        return True            
     
     
     def can_be_collapsed(self):
@@ -109,10 +119,11 @@ class Board:
         max_state = max(counts, key=counts.get)[::-1] # Get the state with the highest probability
         
         # Update the board based on the measurement results and apply the corresponding classical moves
+        self.circuit.reset(self.qubits) 
         for i in range(self.size ** 2):
             row, col = divmod(i, self.size)
             if self.cells[row][col].endswith('?'):
-                self.cells[row][col] = 'X' if max_state[i] == '1' else 'O'
+                self.make_classical_move(row, col, 'X' if max_state[i] == '1' else 'O')
         self.entanglement_count = 0
         return counts
 
