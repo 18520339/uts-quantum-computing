@@ -8,12 +8,15 @@ class Board:
         # Initialize the quantum circuit with one qubit and classical bit for each cell
         self.size = size
         self.entanglement_count = 0
-        self.simulator = AerSimulator()
+        self.cells = [[' ' for _ in range(size)] for _ in range(size)] # Initialize the board representation
         
+        self.simulator = AerSimulator()
         self.qubits = QuantumRegister(size**2, 'q')
         self.bits = ClassicalRegister(size**2, 'c')
+        
         self.circuit = QuantumCircuit(self.qubits, self.bits)
-        self.cells = [[' ' for _ in range(size)] for _ in range(size)] # Initialize the board representation
+        self.circuit.reset(self.qubits) 
+        self.circuit.barrier()
         
         ''' For a 3x3 board, the winning lines are:
         - Horizontal lines: (0, 1, 2), (3, 4, 5), (6, 7, 8)
@@ -46,7 +49,10 @@ class Board:
     def make_classical_move(self, row, col, player_mark):
         if self.cells[row][col] == ' ': # Check if the cell is occupied
             self.cells[row][col] = player_mark
-            self.circuit.x(self.qubits[row * self.size + col]) # Pauli-X to mark the move
+            index = row * self.size + col
+            
+            if player_mark == 'X': self.circuit.x(self.qubits[index])
+            else: self.circuit.id(self.qubits[index])
             return True
         return False
 
@@ -94,22 +100,20 @@ class Board:
 
     def collapse_board(self):
         # Simulate the measurement process and update the board accordingly
+        self.circuit.barrier()
         self.circuit.measure(self.qubits, self.bits) # Measure the quantum state to collapse it to classical states
+        
         transpiled_circuit = transpile(self.circuit, self.simulator)
         job = self.simulator.run(transpiled_circuit, memory=True)
-        
         counts = job.result().get_counts()
-        max_state = max(counts, key=counts.get) # Get the state with the highest probability
-        measured_state = format(int(max_state, 16), f'0{self.size**2}b')[::-1] 
+        max_state = max(counts, key=counts.get)[::-1] # Get the state with the highest probability
         
+        # Update the board based on the measurement results and apply the corresponding classical moves
         for i in range(self.size ** 2):
             row, col = divmod(i, self.size)
             if self.cells[row][col].endswith('?'):
-                self.cells[row][col] = 'X' if measured_state[i] == '1' else 'O'
-
-        # Reset the circuit for the next round of quantum moves    
+                self.cells[row][col] = 'X' if max_state[i] == '1' else 'O'
         self.entanglement_count = 0
-        self.circuit.reset(self.qubits) 
         return counts
 
     
