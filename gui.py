@@ -16,8 +16,8 @@ class QuantumTicTacToeGUI:
         self.quantum_moves_selected = [] # Selected cells for operation on multi-qubit gates 
 
         self.log = widgets.Output(layout={'margin': '10px 0 0 0'})
+        self.histogram_output = widgets.Output(layout={'margin': '0 0 10px 10px'})
         self.circuit_output = widgets.Output()
-        self.histogram_output = widgets.Output()
         self.create_widgets()
                     
             
@@ -44,38 +44,37 @@ class QuantumTicTacToeGUI:
                 self.game_info
             ]), 
             self.histogram_output
-        ], layout = {'display': 'flex', 'justify_content': 'space-between', 'align_items': 'flex-end'})
+        ], layout = {'display': 'flex', 'justify_content': 'center', 'align_items': 'flex-end'})
         display(widgets.VBox([self.board_histogram_widget, self.action_buttons, self.log, self.circuit_output]))
 
 
     def create_action_buttons(self):
-        # Create buttons for each action
-        self.reset_btn = widgets.Button(description='Reset')
+        self.reset_btn = widgets.Button(description='Reset', button_style='danger')
         self.measure_btn = widgets.Button(description='Measure', button_style='warning')
-        self.classical_btn = widgets.Button(description='Classical Move', button_style='danger')
-        self.swap_btn = widgets.Button(description='SWAP Move', button_style='success')
+        self.classical_btn = widgets.Button(description='Classical Move', button_style='primary')
+        self.swap_btn = widgets.Button(description='SWAP Move', button_style='info')
+        self.superposition_btn = widgets.Button(description='Superposition', button_style='success')
         
-        self.superposition_btn = widgets.Button(description='Superposition', button_style='info')
-        self.entangled_btn = widgets.Button(description='Entanglement', button_style='primary')
-        self.entangled_options = widgets.Dropdown(
-            options = [('PAIRWAISE: Hadamard-CNOT', 1), ('TRIPLE: Hadamard-CNOT-TOFFOLI', 2)], 
-            value = 1 # Default is Pairwise Entanglement
-        )
+        self.entangled_btn = widgets.Button(description='Entanglement', button_style='success')
+        self.entangled_options = widgets.Dropdown(options=[
+            ('Lv1. PAIRWAISE: ∣Ψ+⟩ = (∣01⟩ + ∣10⟩) / √2', 1), # Qubits collapse to opposite states (not consecutive)
+            ('Lv2. TRIPLE: GHZ_Xs = (∣010⟩ + ∣101⟩) / √2', 2),
+            ('Lv3. PAIRWAISE: ∣Φ+⟩ = (∣00⟩ + ∣11⟩) / √2', 3), # Can form consecutive winning cells or accidentally help the opponent
+            ('Lv4. TRIPLE: GHZ = (∣000⟩ + ∣111⟩) / √2', 4),
+        ], value=1)
         
-        # Assign the on-click events to the buttons
         self.reset_btn.on_click(self.on_reset_btn_clicked)
         self.measure_btn.on_click(self.on_measure_btn_clicked)
         self.classical_btn.on_click(self.create_on_quantum_clicked('CLASSICAL'))
         self.swap_btn.on_click(self.create_on_quantum_clicked('SWAP', 'Select 2 cells to swap their states.'))
-        self.entangled_btn.on_click(self.create_on_quantum_clicked('ENTANGLED', 'Select 2 cells to entangle.'))
+        self.entangled_btn.on_click(self.create_on_quantum_clicked('ENTANGLED', 'Select cells to entangle.'))
         
-        # Arrange the buttons in a horizontal layout
-        self.action_buttons = widgets.VBox([
-            widgets.HBox([self.reset_btn, self.measure_btn, self.classical_btn, self.swap_btn]),
-            widgets.HBox([self.entangled_options, self.entangled_btn, self.superposition_btn]),
+        self.action_buttons = widgets.HBox([
+            self.reset_btn, self.measure_btn, self.classical_btn, self.swap_btn, 
+            self.superposition_btn, self.entangled_btn, self.entangled_options
         ])
-    
-    
+        
+        
     def on_reset_btn_clicked(self, btn=None):
         with self.log:
             clear_output(wait=True)
@@ -149,21 +148,20 @@ class QuantumTicTacToeGUI:
 
     def update_board(self):
         self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
-        self.check_win()
-
+        self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
+        
         for i in range(self.board.size):
             for j in range(self.board.size):
                 cell = self.board.cells[i][j]
                 button = self.buttons[i][j]
-                color_map = {'X': 'orangered', 'O': 'green', '?': 'dodgerblue', ' ': 'lightgray'}
+                color_map = {'X': 'dodgerblue', 'O': 'purple', '?': 'green', ' ': 'lightgray'}
                 
                 button.description = cell if cell != ' ' else ' '
                 button.style.button_color = color_map[cell[-1]]
                 button.disabled = self.game_over
                 
-        self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
-        for btn in self.action_buttons.children[:-1]:
-            btn.disabled = self.game_over
+        self.check_win() # Check if the game is over after each move
+        for btn in self.action_buttons.children[1:]: btn.disabled = self.game_over
         
 
     def check_win(self):
@@ -172,11 +170,16 @@ class QuantumTicTacToeGUI:
             result = self.board.check_win()
             
             if result == 'Draw': 
+                self.game_over = True
                 print("Game Over. It's a draw!")
+                
+            elif type(result) == tuple: 
                 self.game_over = True
-            elif result in ['X', 'O']: 
-                print(f'Game Over. {result} wins!')
-                self.game_over = True
+                for cell_index in result: 
+                    i, j = divmod(cell_index, self.board.size)
+                    self.buttons[i][j].style.button_color = 'orangered'
+                print(f'Game Over. {result[0]} wins!')
+                
             elif type(result) == int: 
                 print(f'All cells are filled with {result} entanglements => Keep Collapsing...')
                 self.board.collapse_board() # All cells are filled but there are entanglements 
@@ -192,4 +195,4 @@ class QuantumTicTacToeGUI:
     def display_histogram(self, counts):
         with self.histogram_output:
             clear_output(wait=True)
-            display(plot_histogram(counts, figsize=(9, 5)))
+            display(plot_histogram(counts, figsize=(9, 4)))
