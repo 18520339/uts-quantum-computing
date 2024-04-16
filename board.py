@@ -45,8 +45,8 @@ class Board:
         return board_str
 
     
-    def make_classical_move(self, row, col, player_mark):
-        if self.cells[row][col] == ' ': # Check if the cell is occupied
+    def make_classical_move(self, row, col, player_mark, is_collapsed=False):
+        if self.cells[row][col] == ' ' or is_collapsed: # Check if the cell is occupied
             self.cells[row][col] = player_mark
             index = row * self.size + col
             
@@ -70,6 +70,7 @@ class Board:
         # Entangle the quantum states of 2 or 3 cells based on the risk level
         pos_count = len(positions)
         if pos_count not in [2, 3] or risk_level not in [1, 2, 3, 4] or len(set(positions)) != pos_count or \
+            (pos_count == 2 and risk_level not in [1, 3]) or (pos_count == 3 and risk_level not in [2, 4]) or \
             any(self.cells[row][col] != ' ' for row, col in positions): return False
         
         indices = [row * self.size + col for row, col in positions]
@@ -97,13 +98,10 @@ class Board:
     
     
     def can_be_collapsed(self):
-        # Determine if a measurement should be made based on complex conditions.
-        # Condition: measure if the entanglements reach 3 or more,
-        # And if entangled cells form a potential winning line => measure
-        if self.entanglement_count >= 3:
-            for line in self.winning_lines:
-                if all(self.cells[i // self.size][i % self.size].endswith('?') for i in line): 
-                    return True
+        # If superpositions/entanglement cells form a potential winning line => measure
+        for line in self.winning_lines:
+            if all(self.cells[i // self.size][i % self.size].endswith('?') for i in line): 
+                return True
         return False
     
 
@@ -122,7 +120,7 @@ class Board:
             row, col = divmod(i, self.size)
             if self.cells[row][col].endswith('?'):
                 self.circuit.reset(self.qubits[i]) 
-                self.make_classical_move(row, col, 'X' if max_state[i] == '1' else 'O')
+                self.make_classical_move(row, col, 'X' if max_state[i] == '1' else 'O', is_collapsed=True)
                 
         self.entanglement_count = 0
         return counts
