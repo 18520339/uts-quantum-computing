@@ -16,7 +16,6 @@ class Board:
         
         self.circuit = QuantumCircuit(self.qubits, self.bits)
         self.circuit.reset(self.qubits) 
-        self.circuit.barrier()
         
         ''' For a 3x3 board, the winning lines are:
         - Horizontal lines: (0, 1, 2), (3, 4, 5), (6, 7, 8)
@@ -119,11 +118,12 @@ class Board:
         max_state = max(counts, key=counts.get)[::-1] # Get the state with the highest probability
         
         # Update the board based on the measurement results and apply the corresponding classical moves
-        self.circuit.reset(self.qubits) 
         for i in range(self.size ** 2):
             row, col = divmod(i, self.size)
             if self.cells[row][col].endswith('?'):
+                self.circuit.reset(self.qubits[i]) 
                 self.make_classical_move(row, col, 'X' if max_state[i] == '1' else 'O')
+                
         self.entanglement_count = 0
         return counts
 
@@ -134,7 +134,7 @@ class Board:
             # Check if all cells in the line are the same and not empty
             first_cell = self.cells[line[0] // self.size][line[0] % self.size]
             is_same = all(self.cells[i // self.size][i % self.size] == first_cell for i in line)
-            if is_same and first_cell not in [' ', 'X?', 'O?']: return first_cell
+            if is_same and first_cell not in [' ', 'X?', 'O?']: return line
                 
         # If no spaces and no entanglements left => 'Draw'
         # If all cells are filled but there are entanglements => collapse_board
