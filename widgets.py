@@ -83,7 +83,7 @@ class QuantumT3Widgets(metaclass=ABCMeta):
         raise NotImplementedError('on_move_clicked method is not implemented.')
     
     @abstractmethod # Pure virtual functions => Must be overridden in the derived classes
-    def on_cell_clicked(self, row, col):
+    def on_cell_clicked(self, btn, row, col):
         raise NotImplementedError('on_cell_clicked method is not implemented.')
     
     
@@ -109,7 +109,7 @@ class QuantumT3Widgets(metaclass=ABCMeta):
     
     def create_on_cell_clicked(self, row, col):
         def on_cell_clicked(btn):
-            self.on_cell_clicked(row, col)
+            self.on_cell_clicked(btn, row, col)
         return on_cell_clicked
     
     
