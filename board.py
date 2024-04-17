@@ -13,9 +13,7 @@ class Board:
         self.simulator = AerSimulator()
         self.qubits = QuantumRegister(size**2, 'q')
         self.bits = ClassicalRegister(size**2, 'c')
-        
         self.circuit = QuantumCircuit(self.qubits, self.bits)
-        self.circuit.reset(self.qubits) 
         
         ''' For a 3x3 board, the winning lines are:
         - Horizontal lines: (0, 1, 2), (3, 4, 5), (6, 7, 8)
@@ -107,7 +105,7 @@ class Board:
     
     
     def can_be_collapsed(self):
-        # If superpositions/entanglement cells form a potential winning line => measure
+        # If superpositions/entanglement cells form a potential winning line => collapse
         for line in self.winning_lines:
             if all(self.cells[i // self.size][i % self.size].endswith('?') for i in line): 
                 return True
@@ -115,16 +113,15 @@ class Board:
     
 
     def collapse_board(self):
-        # Simulate the measurement process and update the board accordingly
+        # Update the board based on the measurement results and apply the corresponding classical moves
         self.circuit.barrier()
-        self.circuit.measure(self.qubits, self.bits) # Measure the quantum state to collapse it to classical states
+        self.circuit.measure(self.qubits, self.bits) # Measure all qubits to collapse them to classical states
         
         transpiled_circuit = transpile(self.circuit, self.simulator)
         job = self.simulator.run(transpiled_circuit, memory=True)
         counts = job.result().get_counts()
         max_state = max(counts, key=counts.get)[::-1] # Get the state with the highest probability
         
-        # Update the board based on the measurement results and apply the corresponding classical moves
         for i in range(self.size ** 2):
             row, col = divmod(i, self.size)
             if self.cells[row][col].endswith('?'):
