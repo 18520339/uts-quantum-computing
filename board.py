@@ -7,7 +7,7 @@ class Board:
     def __init__(self, size=3):
         # Initialize the quantum circuit with one qubit and classical bit for each cell
         self.size = size
-        self.entanglement_count = 0
+        self.superposition_count = 0
         self.cells = [[' ' for _ in range(size)] for _ in range(size)] # Initialize the board representation
         
         self.simulator = AerSimulator()
@@ -57,7 +57,6 @@ class Board:
 
 
     def make_swap_move(self, row1, col1, row2, col2):
-        # Swap the quantum states of 2 cells
         if self.cells[row1][col1] != ' ' and self.cells[row2][col2] != ' ':
             indices = [row1 * self.size + col1, row2 * self.size + col2]
             self.circuit.swap(self.qubits[indices[0]], self.qubits[indices[1]])
@@ -66,7 +65,17 @@ class Board:
         return False
     
     
-    def make_entangled_move(self, *positions, risk_level, player_mark):
+    def make_superposition_move(self, row, col, player_mark, **kwargs):
+        if self.cells[row][col] == ' ':
+            index = row * self.size + col
+            self.circuit.h(self.qubits[index])
+            self.cells[row][col] = player_mark + '?'
+            self.superposition_count += 1
+            return True
+        return False
+    
+    
+    def make_entangled_move(self, *positions, risk_level, player_mark, **kwargs):
         # Entangle the quantum states of 2 or 3 cells based on the risk level
         pos_count = len(positions)
         if pos_count not in [2, 3] or risk_level not in [1, 2, 3, 4] or len(set(positions)) != pos_count or \
@@ -93,7 +102,7 @@ class Board:
             self.circuit.cx(self.qubits[indices[1]], self.qubits[indices[2]])
             
         for row, col in positions: self.cells[row][col] = player_mark + '?'
-        self.entanglement_count += 1
+        self.superposition_count += pos_count
         return True            
     
     
@@ -122,7 +131,7 @@ class Board:
                 self.circuit.reset(self.qubits[i]) 
                 self.make_classical_move(row, col, 'X' if max_state[i] == '1' else 'O', is_collapsed=True)
                 
-        self.entanglement_count = 0
+        self.superposition_count = 0
         return counts
 
     
@@ -131,12 +140,13 @@ class Board:
         for line in self.winning_lines:
             # Check if all cells in the line are the same and not empty
             first_cell = self.cells[line[0] // self.size][line[0] % self.size]
-            is_same = all(self.cells[i // self.size][i % self.size] == first_cell for i in line)
-            if is_same and first_cell not in [' ', 'X?', 'O?']: return line
+            if first_cell not in [' ', 'X?', 'O?']:
+                is_same = all(self.cells[i // self.size][i % self.size] == first_cell for i in line)
+                if is_same: return line
                 
-        # If no spaces and no entanglements left => 'Draw'
-        # If all cells are filled but there are entanglements => collapse_board
+        # If no spaces and no superpositions left => 'Draw'
+        # If all cells are filled but some are still in superpositions => collapse_board
         if all(self.cells[i // self.size][i % self.size] not in [' '] for i in range(self.size**2)):
-            if self.entanglement_count <= 0: return 'Draw'
-            return self.entanglement_count
+            if self.superposition_count <= 0: return 'Draw'
+            return self.superposition_count
         return None
