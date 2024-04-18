@@ -87,24 +87,35 @@ class QuantumT3GUI(QuantumT3Widgets):
             elif self.quantum_move_mode == 'SUPERPOSITION': 
                 btn.description = self.current_player + '?'
                 btn.style.button_color = 'green'
-                self.superposition_and_entanglement_wrapper(
-                    func = self.board.make_superposition_move, pos = (row, col), 
-                    success_msg='Cell is now in superposition state.')
+                
+                self.make_quantum_move_wrapper(
+                    board_func=self.board.make_superposition_move, pos=(row, col), 
+                    success_msg='Cell is now in superposition state.',
+                    failure_msg='Invalid superposition move. Cell must be empty.')
                 
             elif len(self.quantum_moves_selected) < 3: # Multi-qubit gates operation
-                self.quantum_moves_selected.append((row, col))
+                self.quantum_moves_selected.append((row, col)) # Store the selected cell of operation
                 print(f'Cell ({row + 1}, {col + 1}) selected for {self.quantum_move_mode} move.')
                 
-                if self.quantum_move_mode == 'SWAP' and len(self.quantum_moves_selected) == 2: self.make_swap_move()
+                if self.quantum_move_mode == 'SWAP' and len(self.quantum_moves_selected) == 2: 
+                    flat_pos = sum(self.quantum_moves_selected, ()) # Flatten the tuple to match 4 arguments in Board.make_swap_move
+                    pos1, pos2 = self.quantum_moves_selected
+                    
+                    self.make_quantum_move_wrapper(
+                        board_func=self.board.make_swap_move, pos=flat_pos,
+                        success_func=self.make_swap_move, success_msg=f'SWAPPED Cell {pos1} to {pos2}',
+                        failure_msg='Invalid SWAP move. Both cells must be non-empty.')
+                    
                 elif self.quantum_move_mode == 'ENTANGLED':
                     btn.description = self.current_player + '?'
                     btn.style.button_color = 'green'
                     total_empty_required = {1: 2, 2: 3, 3: 2, 4: 3} # Total empty cells required for each risk level
                     
                     if len(self.quantum_moves_selected) == total_empty_required[self.entangled_options.value]: 
-                        self.superposition_and_entanglement_wrapper(
-                            func = self.board.make_entangled_move, pos = self.quantum_moves_selected,
-                            success_msg='These positions are now entangled and in a superposition state.')
+                        self.make_quantum_move_wrapper(
+                            board_func=self.board.make_entangled_move, pos=self.quantum_moves_selected,
+                            success_msg='These positions are now entangled and in a superposition state.',
+                            failure_msg='Invalid entangled move. A position is already occupied.')
 
 
     def make_classical_move(self, row, col):
@@ -116,26 +127,20 @@ class QuantumT3GUI(QuantumT3Widgets):
         
  
     def make_swap_move(self):
-        if self.board.make_swap_move(*self.quantum_moves_selected[0], *self.quantum_moves_selected[1]):
-            print(f'SWAPPED Cell {self.quantum_moves_selected[0]} to {self.quantum_moves_selected[1]}')
-            row1, col1 = self.quantum_moves_selected[0][0], self.quantum_moves_selected[0][1]
-            row2, col2 = self.quantum_moves_selected[1][0], self.quantum_moves_selected[1][1]
+        row1, col1 = self.quantum_moves_selected[0][0], self.quantum_moves_selected[0][1]
+        row2, col2 = self.quantum_moves_selected[1][0], self.quantum_moves_selected[1][1]
+        
+        # Swap the description and color of the selected cells
+        self.buttons[row1][col1].description, self.buttons[row2][col2].description = \
+            self.buttons[row2][col2].description, self.buttons[row1][col1].description   
+        self.buttons[row1][col1].style.button_color, self.buttons[row2][col2].style.button_color = \
+            self.buttons[row2][col2].style.button_color, self.buttons[row1][col1].style.button_color
             
-            # Swap the description and color of the selected cells
-            self.buttons[row1][col1].description, self.buttons[row2][col2].description = \
-                self.buttons[row2][col2].description, self.buttons[row1][col1].description   
-            self.buttons[row1][col1].style.button_color, self.buttons[row2][col2].style.button_color = \
-                self.buttons[row2][col2].style.button_color, self.buttons[row1][col1].style.button_color
-            self.check_win()
-        else:
-            clear_output(wait=True)
-            self.quantum_moves_selected = []
-            print('Invalid SWAP move. Both cells must be non-empty.')
 
-
-    def superposition_and_entanglement_wrapper(self, func, pos, success_msg):
-        if func(*pos, risk_level=self.entangled_options.value, player_mark=self.current_player): 
+    def make_quantum_move_wrapper(self, board_func, pos, success_func=None, success_msg='', failure_msg='Invalid quantum move.'):
+        if board_func(*pos, risk_level=self.entangled_options.value, player_mark=self.current_player): 
             print(success_msg)
+            if success_func: success_func()
             if self.board.can_be_collapsed():
                 print('Perform automatic board measurement and collapse the states.')
                 self.quantum_moves_selected = []
@@ -144,7 +149,7 @@ class QuantumT3GUI(QuantumT3Widgets):
         else:
             clear_output(wait=True)
             self.clean_incompleted_quantum_moves()
-            print('Invalid quantum move. A position is already occupied.')
+            print(failure_msg)
     
 
     def check_win(self):
@@ -163,9 +168,9 @@ class QuantumT3GUI(QuantumT3Widgets):
             elif type(result) == tuple: 
                 self.game_over = True
                 for cell_index in result: 
-                    i, j = divmod(cell_index, self.board.size)
-                    self.buttons[i][j].style.button_color = 'orangered'
-                print(f'Game Over. {self.board.cells[i][j]} wins!')
+                    row, col = divmod(cell_index, self.board.size)
+                    self.buttons[row][col].style.button_color = 'orangered'
+                print(f'Game Over. {self.board.cells[row][col]} wins!')
                 
             elif type(result) == int: 
                 print(f'All cells are filled but {result} of them still in superpositions => Keep Collapsing...')
