@@ -4,8 +4,8 @@ from IPython.display import clear_output
 
       
 class QuantumT3GUI(QuantumT3Widgets):
-    def __init__(self, size=3):
-        super().__init__(Board(size), 'X', 'CLASSICAL')         
+    def __init__(self, size=3, simulator=None):
+        super().__init__(Board(size, simulator), 'X', 'CLASSICAL')         
         self.quantum_moves_selected = [] # Selected cells for operation on multi-qubit gates 
         self.game_over = False
 
@@ -36,7 +36,7 @@ class QuantumT3GUI(QuantumT3Widgets):
     def on_reset_btn_clicked(self, btn=None):
         with self.log:
             clear_output(wait=True)
-            self.board = Board(self.board.size) 
+            self.board = Board(self.board.size, self.board.simulator) 
             self.current_player = 'X'
             self.quantum_move_mode = 'CLASSICAL'
             self.quantum_moves_selected = []

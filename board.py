@@ -1,16 +1,15 @@
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
-from qiskit_aer import AerSimulator
 from termcolor import colored
 
 
 class Board:
-    def __init__(self, size=3):
+    def __init__(self, size=3, simulator=None):
         # Initialize the quantum circuit with one qubit and classical bit for each cell
         self.size = size
+        self.simulator = simulator
         self.superposition_count = 0
         self.cells = [[' ' for _ in range(size)] for _ in range(size)] # Initialize the board representation
         
-        self.simulator = AerSimulator()
         self.qubits = QuantumRegister(size**2, 'q')
         self.bits = ClassicalRegister(size**2, 'c')
         self.circuit = QuantumCircuit(self.qubits, self.bits)
