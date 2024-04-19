@@ -107,17 +107,21 @@ class QuantumT3Widgets(metaclass=ABCMeta):
                 else: print(f'Select 3 cells (qubits) for this TRIPLE entanglement.')
                 
     
-    def create_on_cell_clicked(self, row, col):
-        def on_cell_clicked(btn):
-            self.on_cell_clicked(btn, row, col)
-        return on_cell_clicked
-    
-    
     def create_on_move_clicked(self, mode, message=''):
         def on_move_clicked(btn):
-            self.on_move_clicked(mode, message)
+            with self.log:
+                try: self.on_move_clicked(mode, message)
+                except Exception as e: print(f'ERROR: {e}')
         return on_move_clicked
     
+    
+    def create_on_cell_clicked(self, row, col):
+        def on_cell_clicked(btn):
+            with self.log:
+                try: self.on_cell_clicked(btn, row, col)
+                except Exception as e: print(f'ERROR: {e}')
+        return on_cell_clicked
+
     
     def display_circuit(self):
         with self.circuit_output:

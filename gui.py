@@ -67,55 +67,53 @@ class QuantumT3GUI(QuantumT3Widgets):
             
     
     def on_move_clicked(self, mode, message=''):
-        with self.log:
-            clear_output(wait=True)
-            self.quantum_move_mode = mode
-            self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
-            self.clean_incompleted_quantum_moves()
+        clear_output(wait=True)
+        self.quantum_move_mode = mode
+        self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
+        self.clean_incompleted_quantum_moves()
+        
+        for row in self.buttons:
+            for button in row: button.disabled = mode == 'ENTANGLED'
             
-            for row in self.buttons:
-                for button in row: button.disabled = mode == 'ENTANGLED'
-                
-            if mode == 'ENTANGLED': self.entangled_options.value = 0
-            self.entangled_options.disabled = mode != 'ENTANGLED'
-            print(f'{mode} mode ACTIVATED' + (f': {message}' if message else ''))
+        if mode == 'ENTANGLED': self.entangled_options.value = 0
+        self.entangled_options.disabled = mode != 'ENTANGLED'
+        print(f'{mode} mode ACTIVATED' + (f': {message}' if message else ''))
 
     
     def on_cell_clicked(self, btn, row, col):
-        with self.log:
-            if self.quantum_move_mode == 'CLASSICAL': self.make_classical_move(row, col)
-            elif self.quantum_move_mode == 'SUPERPOSITION': 
-                btn.description = self.current_player + '?'
-                btn.style.button_color = 'green'
+        if self.quantum_move_mode == 'CLASSICAL': self.make_classical_move(row, col)
+        elif self.quantum_move_mode == 'SUPERPOSITION': 
+            btn.description = self.current_player + '?'
+            btn.style.button_color = 'green'
+            
+            self.make_quantum_move_wrapper(
+                board_func=self.board.make_superposition_move, pos=(row, col), 
+                success_msg='Cell is now in superposition state.',
+                failure_msg='Invalid superposition move. Cell must be empty.')
+            
+        elif len(self.quantum_moves_selected) < 3: # Multi-qubit gates operation
+            self.quantum_moves_selected.append((row, col)) # Store the selected cell of operation
+            print(f'Cell ({row + 1}, {col + 1}) selected for {self.quantum_move_mode} move.')
+            
+            if self.quantum_move_mode == 'SWAP' and len(self.quantum_moves_selected) == 2: 
+                flat_pos = sum(self.quantum_moves_selected, ()) # Flatten the tuple to match 4 arguments in Board.make_swap_move
+                pos1, pos2 = self.quantum_moves_selected
                 
                 self.make_quantum_move_wrapper(
-                    board_func=self.board.make_superposition_move, pos=(row, col), 
-                    success_msg='Cell is now in superposition state.',
-                    failure_msg='Invalid superposition move. Cell must be empty.')
+                    board_func=self.board.make_swap_move, pos=flat_pos,
+                    success_func=self.make_swap_move, success_msg=f'SWAPPED Cell {pos1} to {pos2}',
+                    failure_msg='Invalid SWAP move. Both cells must be non-empty.')
                 
-            elif len(self.quantum_moves_selected) < 3: # Multi-qubit gates operation
-                self.quantum_moves_selected.append((row, col)) # Store the selected cell of operation
-                print(f'Cell ({row + 1}, {col + 1}) selected for {self.quantum_move_mode} move.')
+            elif self.quantum_move_mode == 'ENTANGLED':
+                btn.description = self.current_player + '?'
+                btn.style.button_color = 'green'
+                total_empty_required = {1: 2, 2: 3, 3: 2, 4: 3} # Total empty cells required for each risk level
                 
-                if self.quantum_move_mode == 'SWAP' and len(self.quantum_moves_selected) == 2: 
-                    flat_pos = sum(self.quantum_moves_selected, ()) # Flatten the tuple to match 4 arguments in Board.make_swap_move
-                    pos1, pos2 = self.quantum_moves_selected
-                    
+                if len(self.quantum_moves_selected) == total_empty_required[self.entangled_options.value]: 
                     self.make_quantum_move_wrapper(
-                        board_func=self.board.make_swap_move, pos=flat_pos,
-                        success_func=self.make_swap_move, success_msg=f'SWAPPED Cell {pos1} to {pos2}',
-                        failure_msg='Invalid SWAP move. Both cells must be non-empty.')
-                    
-                elif self.quantum_move_mode == 'ENTANGLED':
-                    btn.description = self.current_player + '?'
-                    btn.style.button_color = 'green'
-                    total_empty_required = {1: 2, 2: 3, 3: 2, 4: 3} # Total empty cells required for each risk level
-                    
-                    if len(self.quantum_moves_selected) == total_empty_required[self.entangled_options.value]: 
-                        self.make_quantum_move_wrapper(
-                            board_func=self.board.make_entangled_move, pos=self.quantum_moves_selected,
-                            success_msg='These positions are now entangled and in a superposition state.',
-                            failure_msg='Invalid entangled move. A position is already occupied.')
+                        board_func=self.board.make_entangled_move, pos=self.quantum_moves_selected,
+                        success_msg='These positions are now entangled and in a superposition state.',
+                        failure_msg='Invalid entangled move. A position is already occupied.')
 
 
     def make_classical_move(self, row, col):
