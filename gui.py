@@ -152,28 +152,30 @@ class QuantumT3GUI(QuantumT3Widgets):
 
     def check_win(self):
         self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
-        self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
         self.quantum_moves_selected = []
                 
         while not self.game_over: # Check if the game is over after each move
             self.display_circuit()
             result = self.board.check_win()
             
-            if result == 'Draw': 
+            if result == 'Draw': # All cells are filled but no winner yet
                 self.game_over = True
                 print("Game Over. It's a draw!")
                 
-            elif type(result) == tuple: 
+            elif type(result) == tuple: # A player wins
                 self.game_over = True
                 for cell_index in result: 
                     row, col = divmod(cell_index, self.board.size)
                     self.buttons[row][col].style.button_color = 'orangered'
                 print(f'Game Over. {self.board.cells[row][col]} wins!')
                 
-            elif type(result) == int: 
+            elif type(result) == int: # All cells are filled but some are still in superpositions 
                 print(f'All cells are filled but {result} of them still in superpositions => Keep Collapsing...')
                 self.quantum_moves_selected = []
-                self.on_collapse_btn_clicked() # All cells are filled but some are still in superpositions 
+                self.on_collapse_btn_clicked() # Automatically collapse the board
                 break
-            else: break # Continue the game if no winner yet
+            
+            else: # Switch players if no winner yet then continue the game
+                self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
+                break
         if self.game_over: self.buttons_disabled(True)
