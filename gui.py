@@ -81,15 +81,21 @@ class QuantumT3GUI(QuantumT3Widgets):
 
     
     def on_cell_clicked(self, btn, row, col):
-        if self.quantum_move_mode == 'CLASSICAL': self.make_classical_move(row, col)
+        if self.quantum_move_mode == 'CLASSICAL': 
+            if self.board.make_classical_move(row, col, self.current_player): 
+                btn.description = self.board.cells[row][col]
+                btn.style.button_color = 'dodgerblue' if self.current_player == 'X' else 'purple'
+                self.check_win()
+            else: print('That position is already occupied. Please choose another.')
+        
         elif self.quantum_move_mode == 'SUPERPOSITION': 
-            btn.description = self.current_player + '?'
-            btn.style.button_color = 'green'
-            
-            self.make_quantum_move_wrapper(
-                board_func=self.board.make_superposition_move, pos=(row, col), 
-                success_msg='Cell is now in superposition state.',
-                failure_msg='Invalid superposition move. Cell must be empty.')
+            if self.board.cells[row][col] == ' ':
+                btn.description = self.current_player + '?'
+                btn.style.button_color = 'green'
+                self.make_quantum_move_wrapper(
+                    board_func=self.board.make_superposition_move, pos=(row, col),
+                    success_msg='Cell is now in superposition state.')
+            else: print('Invalid SUPERPOSITION move. Cell must be empty.')
             
         elif len(self.quantum_moves_selected) < 3: # Multi-qubit gates operation
             self.quantum_moves_selected.append((row, col)) # Store the selected cell of operation
@@ -101,30 +107,26 @@ class QuantumT3GUI(QuantumT3Widgets):
                 
                 self.make_quantum_move_wrapper(
                     board_func=self.board.make_swap_move, pos=flat_pos,
-                    success_func=self.make_swap_move, success_msg=f'SWAPPED Cell {pos1} to {pos2}',
+                    success_func=self.swap_on_board, success_msg=f'SWAPPED Cell {pos1} to {pos2}',
                     failure_msg='Invalid SWAP move. Both cells must be non-empty.')
                 
             elif self.quantum_move_mode == 'ENTANGLED':
-                btn.description = self.current_player + '?'
-                btn.style.button_color = 'green'
-                total_empty_required = {1: 2, 2: 3, 3: 2, 4: 3} # Total empty cells required for each risk level
-                
-                if len(self.quantum_moves_selected) == total_empty_required[self.entangled_options.value]: 
-                    self.make_quantum_move_wrapper(
-                        board_func=self.board.make_entangled_move, pos=self.quantum_moves_selected,
-                        success_msg='These positions are now entangled and in a superposition state.',
-                        failure_msg='Invalid entangled move. A position is already occupied.')
+                if self.board.cells[row][col] == ' ':
+                    btn.description = self.current_player + '?'
+                    btn.style.button_color = 'green'
+                    total_empty_required = {1: 2, 2: 3, 3: 2, 4: 3} # Total empty cells required for each risk level
+                    
+                    if len(self.quantum_moves_selected) == total_empty_required[self.entangled_options.value]: 
+                        self.make_quantum_move_wrapper(
+                            board_func=self.board.make_entangled_move, pos=self.quantum_moves_selected,
+                            success_msg='These positions are now entangled and in a superposition state.',
+                            failure_msg='Invalid ENTANGLEMENT move. Duplicated cell selection.')
+                else: 
+                    print('Invalid ENTANGLEMENT move. A position is already occupied.')
+                    self.quantum_moves_selected.pop() # Remove the invalid cell from the selected list
 
 
-    def make_classical_move(self, row, col):
-        if self.board.make_classical_move(row, col, self.current_player): 
-            self.buttons[row][col].description = self.board.cells[row][col]
-            self.buttons[row][col].style.button_color = 'dodgerblue' if self.current_player == 'X' else 'purple'
-            self.check_win()
-        else: print('That position is already occupied. Please choose another.')
-        
- 
-    def make_swap_move(self):
+    def swap_on_board(self):
         row1, col1 = self.quantum_moves_selected[0][0], self.quantum_moves_selected[0][1]
         row2, col2 = self.quantum_moves_selected[1][0], self.quantum_moves_selected[1][1]
         
@@ -135,9 +137,9 @@ class QuantumT3GUI(QuantumT3Widgets):
             self.buttons[row2][col2].style.button_color, self.buttons[row1][col1].style.button_color
             
 
-    def make_quantum_move_wrapper(self, board_func, pos, success_func=None, success_msg='', failure_msg='Invalid quantum move.'):
+    def make_quantum_move_wrapper(self, board_func, pos, success_msg='', success_func=None, failure_msg=''):
         if board_func(*pos, risk_level=self.entangled_options.value, player_mark=self.current_player): 
-            print(success_msg)
+            if success_msg: print(success_msg)
             if success_func: success_func()
             if self.board.can_be_collapsed():
                 print('Perform automatic board measurement and collapse the states.')
@@ -146,14 +148,12 @@ class QuantumT3GUI(QuantumT3Widgets):
             else: self.check_win()
         else:
             clear_output(wait=True)
+            if failure_msg: print(failure_msg)
             self.clean_incompleted_quantum_moves()
-            print(failure_msg)
     
 
     def check_win(self):
-        self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
         self.quantum_moves_selected = []
-                
         while not self.game_over: # Check if the game is over after each move
             self.display_circuit()
             result = self.board.check_win()
@@ -176,6 +176,7 @@ class QuantumT3GUI(QuantumT3Widgets):
                 break
             
             else: # Switch players if no winner yet then continue the game
+                self.current_player = 'O' if self.current_player == 'X' else 'X' # Switch players
                 self.game_info.value = f'<b>Current Player: {self.current_player} / Quantum Mode: {self.quantum_move_mode}</b>'
                 break
-        if self.game_over: self.buttons_disabled(True)
+        if self.game_over: self.buttons_disabled(True)     
