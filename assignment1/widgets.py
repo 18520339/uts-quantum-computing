@@ -126,7 +126,7 @@ class QuantumT3Widgets(metaclass=ABCMeta):
     def display_circuit(self):
         with self.circuit_output:
             clear_output(wait=True)
-            display(self.board.circuit.draw('mpl', initial_state=True))
+            display(self.board.circuit.draw('mpl', fold=-1, initial_state=True))
 
 
     def display_histogram(self, counts):
