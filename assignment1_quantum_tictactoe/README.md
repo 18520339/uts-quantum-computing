@@ -6,7 +6,7 @@
 ![](./quantum_tic_tac_toe.jpg)
 </details>
 
-> YouTube Demo: ...
+> YouTube Demo: https://www.youtube.com/watch?v=U6_wSh_-EQc
 
 ## I. How the Game is Played
 
