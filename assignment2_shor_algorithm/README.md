@@ -38,13 +38,45 @@ pip install pylatexenc --quiet
 ```
 
 **2. Perform Integer Factorization**
+
 ```python
 from qiskit_aer import AerSimulator
 from shor_algorithm import ShorAlgorithm
 
-shor = ShorAlgorithm(N=21, max_attempts=-1, enable_preprocess=False, simulator=AerSimulator())
+shor = ShorAlgorithm(N=15, max_attempts=-1, random_coprime_only=True, simulator=AerSimulator())
 factors = shor.execute()
 try: display(shor.qpe_circuit.draw(output='mpl', fold=-1))
 except Exception: pass
+```
+
+**[Note]**:
+- **max_attempts**: If set to `-1`, the algorithm will try all possible values of $a$ (a random integer in the range **[2, N)**).
+- **random_coprime_only**: If set to `True`, the algorithm will only consider coprime values of $a$ and $N$.
+
+**3. Example Output**
+```sh
+===== Attempt 1/7 =====
+[START] Chosen base a: 14
+>>> 14 and 15 are coprime => Perform Quantum Phase Estimation to find 14^r - 1 = 0 (MOD 15)
+[ERR] Invalid period found: r = 1 => Retry with different a.
+
+===== Attempt 2/7 =====
+[START] Chosen base a: 13
+>>> 13 and 15 are coprime => Perform Quantum Phase Estimation to find 13^r - 1 = 0 (MOD 15)
+[ERR] Invalid period found: r = 1 => Retry with different a.
+
+===== Attempt 3/7 =====
+[START] Chosen base a: 11
+>>> 11 and 15 are coprime => Perform Quantum Phase Estimation to find 11^r - 1 = 0 (MOD 15)
+>>> Output State: |0101⟩ = 5 (dec) => Phase = 5 / 8 = 0.625
+>>> Found r = 8 => a^{r/2} ± 1 = 11^4 ± 1
+[ERR] 11^4 ± 1 is a multiple of 15 => Retry with different a.
+
+===== Attempt 4/7 =====
+[START] Chosen base a: 2
+>>> 2 and 15 are coprime => Perform Quantum Phase Estimation to find 2^r - 1 = 0 (MOD 15)
+>>> Output State: |0110⟩ = 6 (dec) => Phase = 6 / 8 = 0.750
+>>> Found r = 4 => a^{r/2} ± 1 = 2^2 ± 1
+[DONE] Successfully found non-trivial factors: 15 = 3 * 5
 ```
 👉 Check this [shor_algorithm.ipynb](./shor_algorithm.ipynb) for a demo. You should open it in **Colab**, the notebook viewer within GitHub cannot render the widgets.
