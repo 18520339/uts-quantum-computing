@@ -20,6 +20,7 @@ class ShorAlgorithm:
         # Only coprime values remain if random_coprime_only is enabled, 
         # Otherwise select a random integer in [2, N) as initial guess
         a_values = [a for a in range(2, self.N) if not self.random_coprime_only or (math.gcd(a, self.N) == 1)]
+        print(f'[INFO] {len(a_values)} possible values of a: {a_values}')
         self.max_attempts = len(a_values) if self.max_attempts <= -1 else min(self.max_attempts, len(a_values))
         attempts_count = 0
 
@@ -30,7 +31,7 @@ class ShorAlgorithm:
             self.r = 1
 
             print(f'[START] Chosen base a: {self.chosen_a}')
-            if self.random_coprime_only:
+            if not self.random_coprime_only:
                 gcd = math.gcd(self.chosen_a, self.N)
                 if gcd != 1:
                     print(f'=> {self.chosen_a} and {self.N} share common factor: {self.N} = {gcd} * {self.N // gcd}')

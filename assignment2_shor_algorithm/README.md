@@ -55,6 +55,8 @@ except Exception: pass
 
 **3. Example Output**
 ```sh
+[INFO] 7 possible values of a: [2, 4, 7, 8, 11, 13, 14]
+
 ===== Attempt 1/7 =====
 [START] Chosen base a: 14
 >>> 14 and 15 are coprime => Perform Quantum Phase Estimation to find 14^r - 1 = 0 (MOD 15)
