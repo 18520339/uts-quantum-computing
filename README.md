@@ -14,6 +14,8 @@ Here, I demonstrated the game rules, my **fair play mechanisms**, as well as its
 
 👉 For more details, check the [`assignment1_quantum_tictactoe`](./assignment1_quantum_tictactoe) folder.
 
+![](./assignment1_quantum_tictactoe/circuit.png)
+
 ## [Assignment ∣02⟩ 🔐 Shor's Algorithm 🔐](./assignment2_shor_algorithm/)
 
 This is an implementation of the Shor's algorithm, a quantum algorithm for integer factorization. It is divided into 2 main parts:
@@ -31,3 +33,5 @@ This is an implementation of the Shor's algorithm, a quantum algorithm for integ
  - This **Modular Exponentiation** is crucial for creating the periodic function. It involves applying a series of **controlled-U** gates, where $U$ represents modular multiplication.
 
 👉 For more details, check the [`assignment2_shor_algorithm`](./assignment2_shor_algorithm) folder.
+
+![](./assignment2_shor_algorithm/circuit.png)
