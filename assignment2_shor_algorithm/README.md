@@ -4,21 +4,7 @@
 
 Source: https://rand.cs.uchicago.edu/publication/peng-2022-shor
 
-## I. Introduction
-
-The **Shor's algorithm** can be divided into 2 main parts:
-1. **Classical Part**: This involves reducing the problem of factorizing an integer $N$ to the problem of finding the period $r$ of a specific function.
-2. **Quantum Part**:
-- This involves using a quantum computer to **find the period $r$** efficiently. The algorithm creates a superposition of states to encode information about the period into the quantum state.
-- The **Quantum Fourier Transform (QFT)** is applied to the quantum state to extract the period $r$:
-
-    $$\left| \tilde{x} \right\rangle = QFT_N \vert x \rangle = \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1}  e^{2\pi i \frac{xk}{N}} \vert k \rangle$$
-    $$\text{where N = number of qubits; } \vert k \rangle = \vert k_1 k_2 \cdots k_n \rangle (\text{binary qbuit state })$$
-
- - It is a series of **Hadamard** and **Controlled Phase Rotation** gates to the output state of the **Modular Exponentiation** circuit. This transforms the state into a form where measuring the qubits can yield the period $r$ (just a change of basis).
- - This **Modular Exponentiation** is crucial for creating the periodic function. It involves applying a series of **controlled-U** gates, where $U$ represents modular multiplication.
-
-## II. Shor's Algorithm Steps
+## I. Shor's Algorithm Steps
 1. **Choose a Random Number $a$**: Select a random integer $a$ such that $1 < a < N$.
 2. **Check if $N$ is valid**: If $N$ is even or a prime number or a power of a prime number, then $N$ is not valid for factorization.
 3. **Compute the Greatest Common Divisor (GCD)**: Compute $\text{gcd}(a, N)$. If $\text{gcd}(a, N) \neq 1$, then $\text{gcd}(a, N)$ is a non-trivial factor of $N$.
@@ -42,7 +28,7 @@ The **Shor's algorithm** can be divided into 2 main parts:
 
 6. **Repeat if Necessary**: If the above steps do not yield factors, repeat the process with a different $a$.
 
-## III. Installation and Usage
+## II. Installation and Usage
 
 **1. Install [Qiskit](https://github.com/Qiskit/qiskit) and [PyLaTeXEnc](https://github.com/phfaist/pylatexenc)**
 ```bash
