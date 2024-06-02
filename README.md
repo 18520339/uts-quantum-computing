@@ -18,7 +18,9 @@ Here, I demonstrated the game rules, my **fair play mechanisms**, as well as its
 
 ## [Assignment ∣02⟩ 🔐 Shor's Algorithm 🔐](./assignment2_shor_algorithm/)
 
-This is an implementation of the Shor's algorithm, a quantum algorithm for integer factorization. It is divided into 2 main parts:
+> Demo: https://www.youtube.com/watch?v=BYKc2RnQMqo
+
+This is an implementation of the Shor's Algorithm, a Quantum Algorithm for Integer Factorization. It is divided into 2 main parts:
 
 **1. Classical Part**: This involves reducing the problem of factorizing an integer $N$ to the problem of finding the period $r$ of a specific function.
 
@@ -27,7 +29,7 @@ This is an implementation of the Shor's algorithm, a quantum algorithm for integ
 - The **Quantum Fourier Transform** (QFT) is applied to the quantum state to extract the period $r$:
 
     $$\left| \tilde{x} \right\rangle = QFT_N \vert x \rangle = \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1}  e^{2\pi i \frac{xk}{N}} \vert k \rangle$$
-    $$\text{where N = number of qubits; } \vert k \rangle = \vert k_1 k_2 \cdots k_n \rangle (\text{binary qbuit state })$$
+    $$\text{where N = number of qubits; } \vert k \rangle = \vert k_1 k_2 \cdots k_n \rangle (\text{binary qubit state })$$
 
  - This is a series of **Hadamard** and **Controlled Phase Rotation** gates to the output state of the **Modular Exponentiation** circuit. This transforms the state into a form where measuring the qubits can yield the period $r$ (just a change of basis).
  - This **Modular Exponentiation** is crucial for creating the periodic function. It involves applying a series of **controlled-U** gates, where $U$ represents modular multiplication.

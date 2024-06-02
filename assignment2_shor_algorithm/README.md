@@ -4,6 +4,8 @@
 
 Source: https://rand.cs.uchicago.edu/publication/peng-2022-shor
 
+> YouTube Demo: https://www.youtube.com/watch?v=BYKc2RnQMqo
+
 ## I. Shor's Algorithm Steps
 1. **Choose a Random Number $a$**: Select a random integer $a$ such that $1 < a < N$.
 2. **Check if $N$ is valid**: If $N$ is even or a prime number or a power of a prime number, then $N$ is not valid for factorization.
