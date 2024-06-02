@@ -6,19 +6,20 @@ import math
 
 
 class ShorAlgorithm:
-    def __init__(self, N, max_attempts=-1, enable_preprocess=True, simulator=None):
+    def __init__(self, N, max_attempts=-1, random_coprime_only=False, simulator=None):
         self.N = N
         self.simulator = simulator
-        self.max_attempts = max_attempts # -1 for all possible values of a
-        self.enable_preprocess = enable_preprocess # Select a random integer in [2, N) as initial guess
+        self.max_attempts = max_attempts # `-1` for all possible values of a
+        self.random_coprime_only = random_coprime_only # `True` to select only coprime values of a and N
 
 
     def execute(self):
         is_N_invalid = self._is_N_invalid()
         if is_N_invalid: return is_N_invalid
         
-        # Only coprime values remain if _classical_preprocess is disabled
-        a_values = [a for a in range(2, self.N) if self.enable_preprocess or (math.gcd(a, self.N) == 1)]
+        # Only coprime values remain if random_coprime_only is enabled, 
+        # Otherwise select a random integer in [2, N) as initial guess
+        a_values = [a for a in range(2, self.N) if not self.random_coprime_only or (math.gcd(a, self.N) == 1)]
         self.max_attempts = len(a_values) if self.max_attempts <= -1 else min(self.max_attempts, len(a_values))
         attempts_count = 0
 
@@ -29,7 +30,7 @@ class ShorAlgorithm:
             self.r = 1
 
             print(f'[START] Chosen base a: {self.chosen_a}')
-            if self.enable_preprocess:
+            if self.random_coprime_only:
                 gcd = math.gcd(self.chosen_a, self.N)
                 if gcd != 1:
                     print(f'=> {self.chosen_a} and {self.N} share common factor: {self.N} = {gcd} * {self.N // gcd}')
