@@ -1,7 +1,7 @@
 # Assignment $|01\rangle$ ⚛ Quantum Tic-Tac-Toe game ⚛ 
 
 <details>
-  <summary><b>Picture Demo</b></summary>
+  <summary><b>Picture Demo (Click Here)</b></summary>
 
 ![](./quantum_tic_tac_toe.jpg)
 </details>
