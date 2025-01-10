@@ -10,7 +10,7 @@
 
 ## I. How the Game is Played
 
-In this game, 2 players `X` and `O` is represented by 2 qubit classical states, $|1\rangle$ and $|0\rangle$ respectively. Therefore, the **Pauli-X** gate is used to flip $|0\rangle$ to $|1\rangle$ for player `X`, while the **Identity gate** represents player `O`'s unchanged state $|0\rangle$. Players can choose between making a **classical** move or **quantum** moves, leading to a range of possibilities upon measurement:
+In this game, 2 players `X` and `O` are represented by 2 qubit classical states, $|1\rangle$ and $|0\rangle$ respectively. Therefore, the **Pauli-X** gate is used to flip $|0\rangle$ to $|1\rangle$ for player `X`, while the **Identity gate** represents player `O`'s unchanged state $|0\rangle$. Players can choose between making a **classical** move or **quantum** move, leading to a range of possibilities upon measurement:
 
 1. **Classical Move**: Each player alternates turns, placing their marker `X` or `O` on **1 unoccupied cell**.
 2. **SWAP Move**: Apply the **SWAP** gate swap the states of **2 occupied cells** without adding new markers.
@@ -28,9 +28,9 @@ The `X?` and `O?` markers will be used to indicate the cells are **superposed**/
 
 ## II. Ensure Fairness and Demonstrate a grasp of Quantum Concepts
 
-At the begining, this game only has 3 options: **Classical move**, **Superpostion**, and **Entanglement** with the standard Bell state $|\Phi^+\rangle$. However, this **Entanglement** approach has 2 disadvantages.
+In the beginning, this game only has 3 options: **Classical move**, **Superposition**, and **Entanglement** with the standard Bell state $|\Phi^+\rangle$. However, this **Entanglement** approach has 2 disadvantages.
 
-- **Firstly**, when players selects **Entanglement** and picks 2 cells on the board, this will be unfair for their opponents as they will lose 1 move.
+- **Firstly**, when players select **Entanglement** and pick 2 cells on the board, this will be unfair for their opponents as they will lose 1 move.
 
 - **Secondly**, the **Bell** state $|\Phi^+\rangle$ represents a maximally entangled state where measurement outcomes are perfectly correlated ($|00\rangle$ or $|11\rangle$). This strategy can be risky as it could lead to either a winning line quicker or accidentally help the opponent. For example, if `X` players have a plan of entangling 2 consecutive cells, they can have:
     - Multiple `X` in a row, increasing their possibility of winning.
@@ -38,9 +38,9 @@ At the begining, this game only has 3 options: **Classical move**, **Superpostio
 
 **Therefore, to overcome these**:
 - I introduce the **SWAP Move**, which can disrupt existing lines or defenses in the opponent's strategy, limiting players from overusing **Entanglement** to dominate the game unfairly.
-- Moreover, I introduce **4 Entangelement Risk Levels** to add strategic depth and requiring players to think critically about the consequences of their quantum moves:
-    - By adding an **Pauli-X** gate before the **CNOT**'s target qubit, I turned the Bell state $|\Phi^+\rangle$ into $|\Psi^+\rangle$, which also represents a maximally entangled state but with opposing outcomes, ensuring a 50/50 chance and reducing the above risk of $|\Phi^+\rangle$.
-    - Similarly, I further employed the same approach for **Triple Entanglement** and turn the **Standard $|GHZ\rangle$** state into $|GHZ_{Xs}\rangle$ by applying 2 additional **Pauli-X** before the **CNOT** chains of **2 targeted** qubit components.
+- Moreover, I introduce **4 Entanglement Risk Levels** to add strategic depth and require players to think critically about the consequences of their quantum moves:
+    - By adding a **Pauli-X** gate before the **CNOT**'s target qubit, I turned the Bell state $|\Phi^+\rangle$ into $|\Psi^+\rangle$, which also represents a maximally entangled state but with opposing outcomes, ensuring a 50/50 chance and reducing the above risk of $|\Phi^+\rangle$.
+    - Similarly, I further employed the same approach for **Triple Entanglement** and turn the **Standard |GHZ⟩** state into **|GHZ_Xs⟩** by applying 2 additional **Pauli-X** before the **CNOT** chains of **2 targeted** qubit components.
 
 ## III. Entanglement Risk Levels
 
@@ -167,4 +167,4 @@ game = QuantumT3GUI(size=3, simulator=AerSimulator())
 - Count the number of **winning lines** for each player as a score to demonstrate how confident the winner is or to determine the winner if the game is a **draw**.
 - Apply phase shift gates like **S** or **T** gates before making a move. This could affect the probability **amplitudes** of the states, creating **interference** patterns in probabilities.
 - Implement the `Undo` and `Redo` functionalities for the game. But this is a bit complex for cases like entanglement or after collapsing.
-- Develop an `AI` opponent that adapatively uses quantum strategies, learning from the player's moves.
+- Develop an `AI` opponent that adaptively uses quantum strategies, learning from the player's moves.
